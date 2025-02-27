@@ -1,5 +1,6 @@
 let failedAttempts = parseInt(localStorage.getItem("failedAttempts")) || 0;
 const maxAttempts = 3;
+const permanentBlockThreshold = 10;
 const lockoutTime = 30000; // 30 seconds
 
 function isMalicious(input) {
@@ -14,15 +15,26 @@ function isMalicious(input) {
 }
 
 function checkLockout() {
+    let permanentBlock = localStorage.getItem("permanentBlock");
     let lockoutEndTime = localStorage.getItem("lockoutEndTime");
+    let status = document.getElementById("status");
+    let loginBtn = document.getElementById("loginBtn");
+
+    if (permanentBlock) {
+        status.innerHTML = "🚨 Too many failed attempts! You are permanently blocked!";
+        loginBtn.disabled = true;
+        return true;
+    }
+    
     if (lockoutEndTime && new Date().getTime() < lockoutEndTime) {
         let remainingTime = Math.ceil((lockoutEndTime - new Date().getTime()) / 1000);
-        document.getElementById("status").innerHTML = `🚨 Too many failed attempts! Try again in ${remainingTime} seconds.`;
-        document.getElementById("loginBtn").disabled = true;
+        status.innerHTML = `🚨 Too many failed attempts! Try again in ${remainingTime} seconds.`;
+        loginBtn.disabled = true;
         setTimeout(checkLockout, 1000);
         return true;
     }
-    document.getElementById("loginBtn").disabled = false;
+    
+    loginBtn.disabled = false;
     return false;
 }
 
@@ -39,7 +51,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
         return;
     }
 
-    if (username.trim() === "admin" && password.trim() === "password123") {
+    if (username.trim() === "admin" && password.trim() === "PythonGUI0955") {
         alert("✅ Login successful!");
         status.innerHTML = "Welcome, Admin!";
         status.classList.remove("text-danger");
@@ -49,14 +61,20 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
         failedAttempts = 0;
         localStorage.setItem("failedAttempts", "0");
         localStorage.removeItem("lockoutEndTime");
+        localStorage.removeItem("permanentBlock");
 
-        // Redirect or perform additional actions
+        // Redirect to admin panel
+        window.location.href = "admin.html";
     } else {
         failedAttempts++;
         localStorage.setItem("failedAttempts", failedAttempts.toString());
         status.innerHTML = `❌ Invalid login! Attempt ${failedAttempts}/${maxAttempts}`;
 
-        if (failedAttempts >= maxAttempts) {
+        if (failedAttempts >= permanentBlockThreshold) {
+            localStorage.setItem("permanentBlock", "true");
+            status.innerHTML = "🚨 Too many failed attempts! You are permanently blocked!";
+            document.getElementById("loginBtn").disabled = true;
+        } else if (failedAttempts >= maxAttempts) {
             let lockoutEnd = new Date().getTime() + lockoutTime;
             localStorage.setItem("lockoutEndTime", lockoutEnd);
             status.innerHTML = "🚨 Too many failed attempts! Locked for 30s.";
@@ -64,6 +82,13 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
             checkLockout();
         }
     }
+});
+
+document.getElementById("resetBlock").addEventListener("click", function() {
+    localStorage.removeItem("permanentBlock");
+    localStorage.setItem("failedAttempts", "0");
+    alert("✅ Permanent block has been reset!");
+    location.reload();
 });
 
 checkLockout();
