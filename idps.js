@@ -1,6 +1,6 @@
 let failedAttempts = parseInt(localStorage.getItem("failedAttempts")) || 0;
 const maxAttempts = 3;
-const permanentBlockThreshold = 10;
+const permanentBlockThreshold = 5;
 const lockoutTime = 30000; // 30 seconds
 
 function isMalicious(input) {
@@ -92,3 +92,5 @@ document.getElementById("resetBlock").addEventListener("click", function() {
 });
 
 checkLockout();
+
+

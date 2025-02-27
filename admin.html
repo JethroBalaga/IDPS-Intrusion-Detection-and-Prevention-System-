@@ -8,35 +8,64 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 50px;
+            background-color: #f4f4f4;
+            padding: 50px;
         }
-        .container {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        h1 {
+            color: #333;
         }
-        button {
-            padding: 10px;
-            margin-top: 10px;
+        .logout-btn {
+            background-color: #d9534f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .logout-btn:hover {
+            background-color: #c9302c;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome, Admin!</h1>
-        <p>You have successfully logged in.</p>
-        <button onclick="logout()">Logout</button>
-    </div>
+
+    <h1>Welcome to Admin Panel</h1>
+    <p>Manage your system here.</p>
+
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
 
     <script>
-        function logout() {
-            alert("Logging out...");
-            window.location.href = "index.html"; // Redirect to login page
+        let inactivityTimeout;
+        let warningTimeout;
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimeout);
+            clearTimeout(warningTimeout);
+
+            warningTimeout = setTimeout(() => {
+                alert("⚠️ You will be logged out in 5 seconds due to inactivity.");
+            }, 5000); // 5 seconds warning before logout
+
+            inactivityTimeout = setTimeout(() => {
+                alert("⏳ Session expired due to inactivity.");
+                logout();
+            }, 10000); // 10 seconds total
         }
+
+        function logout() {
+            alert("🚪 Logging out...");
+            window.location.href = "index.html"; // ✅ Redirect to login page
+        }
+
+        // Detect user activity (mouse move or key press)
+        document.addEventListener("mousemove", resetInactivityTimer);
+        document.addEventListener("keypress", resetInactivityTimer);
+
+        // Start the timer when the page loads
+        resetInactivityTimer();
     </script>
+
 </body>
 </html>
